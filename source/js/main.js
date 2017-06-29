@@ -11,12 +11,15 @@ var canvas = document.getElementById("canvas"),
     colors = ["#30CCC1", "#709996", "#55FF94", "#FF95BB", "#CC30B5"],
     particle,
     particles = [],
-    numParticles = 400,
+    numParticles = 1100,
     gGravity = 0.5,
-    friction = 0.75;
+    friction = 0.75,
+    lastCalledTime,
+    fps,
+    delta;
 
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight; /*-
+canvas.height = window.innerHeight -
   function (elmID) {
       var elmHeight, elmMargin, elm = document.getElementById(elmID);
       if(document.all) {// IE
@@ -27,7 +30,7 @@ canvas.height = window.innerHeight; /*-
           elmMargin = parseInt(document.defaultView.getComputedStyle(elm, '').getPropertyValue('margin-top')) + parseInt(document.defaultView.getComputedStyle(elm, '').getPropertyValue('margin-bottom'));
       }
       return (elmHeight+elmMargin);
-  }("title");*/
+  }("footer");
 
 cCenter = {
   x: canvas.width / 2,
@@ -45,8 +48,6 @@ function getRandomInt(min, max) {
 }
 
 function Particle(x, y, radius, color1, color2, life, invincible, velx, vely, emiter) {
-  //console.log(velx);
-  //console.log(vely);
   this.x = x;
   this.y = y;
   this.vx = velx || getRandomArbitrary(-3, 3);
@@ -151,19 +152,23 @@ function animate() {
   c.fillRect(0, 0, canvas.width, canvas.height);
   //c.clearRect(0, 0, canvas.width, canvas.height);
 
+  if(!lastCalledTime) {
+     lastCalledTime = Date.now();
+     fps = 0;
+  }
+  delta = (Date.now() - lastCalledTime)/1000;
+  lastCalledTime = Date.now();
+  fps = 1/delta;
+
+  c.font = 'Verdana';
+  c.fillStyle = "rgba(255, 255, 255, 0.5)"
+  c.fillText('fps: ' + Math.ceil(fps), 15, 15);
+
   for(var i = 0; i < numParticles; i++) {
     particles[i].update(Math.PI * 2);
   }
 
   particle.update(Math.PI * 2);
-
-  /*console.log("Window Dimensions: " + window.innerWidth + " " + window.innerHeight);
-  console.log("Canvas Dimensions: " + canvas.width + " " + canvas.height);
-  console.log("Emiter Location: " + particle.x + " " + particle.y);*/
-
-  if(particle.y > (canvas.height-particle.radius)) {
-    console.log("What the Fuck you should have bounced!!!!!!  " + particle.y);
-  }
 }
 
 // Get Things Going
@@ -178,18 +183,18 @@ addEventListener("mousemove", function(event) {
 
 addEventListener("resize", function() {
   canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;/* -
+  canvas.height = window.innerHeight -
     function (elmID) {
         var elmHeight, elmMargin, elm = document.getElementById(elmID);
         if(document.all) {// IE
-            elmHeight = elm.currentStyle.height;
-            elmMargin = parseInt(elm.currentStyle.marginTop, 10) + parseInt(elm.currentStyle.marginBottom, 10); // + "px";
+            elmHeight = parseInt(elm.currentStyle.height);
+            elmMargin = parseInt(elm.currentStyle.marginTop, 10) + parseInt(elm.currentStyle.marginBottom, 10);
         } else {// Mozilla
             elmHeight = parseInt(document.defaultView.getComputedStyle(elm, '').getPropertyValue('height'));
-            elmMargin = parseInt(document.defaultView.getComputedStyle(elm, '').getPropertyValue('margin-top')) + parseInt(document.defaultView.getComputedStyle(elm, '').getPropertyValue('margin-bottom')); // + "px";
+            elmMargin = parseInt(document.defaultView.getComputedStyle(elm, '').getPropertyValue('margin-top')) + parseInt(document.defaultView.getComputedStyle(elm, '').getPropertyValue('margin-bottom'));
         }
         return (elmHeight+elmMargin);
-    }("title");*/
+    }("footer");
 
   cCenter = {
     x: canvas.width / 2,
