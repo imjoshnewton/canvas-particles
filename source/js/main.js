@@ -13,7 +13,7 @@ var canvas = document.getElementById("canvas"),
     particles = [],
     numParticles = 1100,
     gGravity = 0.5,
-    friction = 0.75,
+    gFriction = 0.75,
     lastCalledTime,
     fps,
     delta;
@@ -47,13 +47,13 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
-function Particle(x, y, radius, color1, color2, life, invincible, velx, vely, emiter) {
+function Particle(x, y, radius, color1, color2, life, invincible, velx, vely, friction, gravity, emiter) {
   this.x = x;
   this.y = y;
   this.vx = velx || getRandomArbitrary(-3, 3);
   this.vy = vely || getRandomArbitrary(-3, 3);
   this.angle = 0;
-  this.radius = radius;
+  this.radius = radius * friction;
   this.color1 = color1;
   this.color2 = color2 || color1;
   this.alpha = 1;
@@ -66,6 +66,8 @@ function Particle(x, y, radius, color1, color2, life, invincible, velx, vely, em
   this.life = life;
   this.maxLife = life;
   this.invincible = invincible || false;
+  this.friction = friction || gFriction;
+  this.gravity = gravity || gGravity;
   this.isEmiter = emiter || false;
 
   this.grad.addColorStop(0, this.color1);
@@ -76,7 +78,7 @@ function Particle(x, y, radius, color1, color2, life, invincible, velx, vely, em
     this.x += this.vx;
     this.y += this.vy;
     if(!this.isEmiter) {
-      this.vy += gGravity;
+      this.vy += this.gravity;
     }
 
     if(this.x < (0+this.radius)) {
@@ -94,10 +96,10 @@ function Particle(x, y, radius, color1, color2, life, invincible, velx, vely, em
     }
     else if(this.y > (canvas.height-this.radius)) {
       if(!this.isEmiter) {
-        this.vy = -this.vy*friction;
+        this.vy = -this.vy*this.friction;
       }
       else { this.vy = -this.vy; }
-      this.y = (canvas.height-(this.radius+gGravity));
+      this.y = (canvas.height-(this.radius+this.gravity));
     }
 
     if(this.life <= 0 && !this.invincible) { this.die(particle.x, particle.y); }
@@ -108,7 +110,6 @@ function Particle(x, y, radius, color1, color2, life, invincible, velx, vely, em
   };
 
   this.die = function(ox, oy) {
-    //console.log("Particle with radius: " + this.radius + " died.");
     this.life = this.maxLife;
     this.x = ox;
     this.y = oy;
@@ -119,7 +120,7 @@ function Particle(x, y, radius, color1, color2, life, invincible, velx, vely, em
   this.draw = function(angle) {
     c.save();
     c.translate(this.x, this.y);
-    c.rotate(-Math.PI / 2);
+    //c.rotate(-Math.PI / 2);
 
     c.beginPath();
     c.arc(0, 0, this.radius, 0, angle, false);
@@ -138,10 +139,10 @@ function Particle(x, y, radius, color1, color2, life, invincible, velx, vely, em
 
 function init() {
   //console.log(colors.length);
-  particle = new Particle(cCenter.x, cCenter.y, 5, colors[getRandomInt(0, colors.length)], colors[getRandomInt(0, colors.length)], getRandomArbitrary(20, 250), true, getRandomArbitrary(20, 20), getRandomArbitrary(20, 20), true);
+  particle = new Particle(cCenter.x, cCenter.y, 5, colors[getRandomInt(0, colors.length)], colors[getRandomInt(0, colors.length)], getRandomArbitrary(20, 250), true, getRandomArbitrary(20, 20), getRandomArbitrary(20, 20), 0, 0, true);
 
   for(var i = 0; i < numParticles; i++) {
-    particles.push(new Particle(particle.x, particle.y, 5, colors[getRandomInt(0, colors.length)], colors[getRandomInt(0, colors.length)], getRandomArbitrary(120, 250), false));
+    particles.push(new Particle(particle.x, particle.y, 15, colors[getRandomInt(0, colors.length)], colors[getRandomInt(0, colors.length)], getRandomArbitrary(120, 250), false, 0, 0, getRandomArbitrary(0.25, 0.75), 0, false));
   }
 }
 
@@ -161,7 +162,7 @@ function animate() {
   fps = 1/delta;
 
   c.font = 'Verdana';
-  c.fillStyle = "rgba(255, 255, 255, 0.5)"
+  c.fillStyle = "rgba(255, 255, 255, 0.5)";
   c.fillText('fps: ' + Math.ceil(fps), 15, 15);
 
   for(var i = 0; i < numParticles; i++) {
